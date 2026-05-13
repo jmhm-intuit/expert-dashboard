@@ -555,12 +555,15 @@
 
   function computeMetrics(rows) {
     const summaryRow = rows.find(r => !r['Expert Name'] || r['Expert Name'] === '');
-    // Only Active experts
-    const active = rows.filter(r => r['Expert Name'] && r['Expert Name'] !== '' && r['Expert Status'] === 'Active');
+    const active   = rows.filter(r => r['Expert Name'] && r['Expert Name'] !== '' && r['Expert Status'] === 'Active');
+    const inactive = rows.filter(r => r['Expert Name'] && r['Expert Name'] !== '' && r['Expert Status'] !== 'Active');
 
-    const unanswered48 = active.filter(r => safeNum(r['# Unanswered Chart > 48hrs']) > 0);
-    const readyToFile  = active.filter(r => safeNum(r['# Ready to File']) > 0);
-    const criticalWIP  = active.filter(r => safeNum(r['# Critical WIP']) > 0);
+    const unanswered48         = active.filter(r => safeNum(r['# Unanswered Chart > 48hrs']) > 0);
+    const readyToFile          = active.filter(r => safeNum(r['# Ready to File']) > 0);
+    const criticalWIP          = active.filter(r => safeNum(r['# Critical WIP']) > 0);
+    const inactiveUnanswered48 = inactive.filter(r => safeNum(r['# Unanswered Chart > 48hrs']) > 0);
+    const inactiveReadyToFile  = inactive.filter(r => safeNum(r['# Ready to File']) > 0);
+    const inactiveCriticalWIP  = inactive.filter(r => safeNum(r['# Critical WIP']) > 0);
 
     return {
       totalExperts: active.length,
@@ -568,9 +571,8 @@
       totalReadyToFile:     summaryRow ? safeNum(summaryRow['# Ready to File'])            : readyToFile.reduce((s,r) => s + safeNum(r['# Ready to File']), 0),
       totalUnansweredChats: summaryRow ? safeNum(summaryRow['# Unanswered Chat'])          : active.reduce((s,r) => s + safeNum(r['# Unanswered Chat']), 0),
       totalCriticalWIP:     summaryRow ? safeNum(summaryRow['# Critical WIP'])             : criticalWIP.reduce((s,r) => s + safeNum(r['# Critical WIP']), 0),
-      unanswered48,
-      readyToFile,
-      criticalWIP,
+      unanswered48, readyToFile, criticalWIP,
+      inactiveUnanswered48, inactiveReadyToFile, inactiveCriticalWIP,
       activeRows: active,
     };
   }
@@ -618,11 +620,11 @@
     html += `</div>`;
 
     // One horizontal section per category
-    html += breakdownSection('Unanswered Chats', m1.unanswered48, m2.unanswered48, m1.activeRows, m2.activeRows, d1, d2,
+    html += breakdownSection('Unanswered Chats', m1.unanswered48, m2.unanswered48, m1.activeRows, m2.activeRows, m1.inactiveUnanswered48, m2.inactiveUnanswered48, d1, d2,
       [{ label: 'Unanswered Chats', key: '# Unanswered Chat' }, { label: '>48h Chats', key: '# Unanswered Chart > 48hrs' }]);
-    html += breakdownSection('Ready to File', m1.readyToFile, m2.readyToFile, m1.activeRows, m2.activeRows, d1, d2,
+    html += breakdownSection('Ready to File', m1.readyToFile, m2.readyToFile, m1.activeRows, m2.activeRows, m1.inactiveReadyToFile, m2.inactiveReadyToFile, d1, d2,
       [{ label: 'Ready to File', key: '# Ready to File' }]);
-    html += breakdownSection('Critical WIP', m1.criticalWIP, m2.criticalWIP, m1.activeRows, m2.activeRows, d1, d2,
+    html += breakdownSection('Critical WIP', m1.criticalWIP, m2.criticalWIP, m1.activeRows, m2.activeRows, m1.inactiveCriticalWIP, m2.inactiveCriticalWIP, d1, d2,
       [{ label: 'Critical WIP', key: '# Critical WIP' }, { label: 'On Hold', key: '# On Hold' }]);
 
     // Expert detail tables
@@ -699,10 +701,30 @@
     return (v / total * 100).toFixed(1) + '%';
   }
 
-  function breakdownSection(title, rows1, rows2, allActive1, allActive2, d1, d2, engCols) {
+  function breakdownSection(title, rows1, rows2, allActive1, allActive2, inactive1, inactive2, d1, d2, engCols) {
     const s1 = tierStats(rows1, allActive1, ENG_COLS);
     const s2 = tierStats(rows2, allActive1, ENG_COLS);
     const total2 = s2.counts.total || 1;
+
+    // Inactive row — experts with this metric who are not Active status
+    const inact1 = inactive1 ? inactive1.length : 0;
+    const inact2 = inactive2 ? inactive2.length : 0;
+    const inactDelta = delta(inact1, inact2);
+    const inactEngCells = engCols.map(c => {
+      const v = (inactive2 || []).reduce((s, r) => s + safeNum(r[c.key]), 0);
+      const tot = (s2.eng.total[c.key] || 1);
+      return `<td>${v.toLocaleString()}</td><td style="color:#555">${pct(v, tot)}</td>`;
+    }).join('');
+    const inactiveRow = `<tr style="background:#fef3f2;border-top:2px solid #e8d0ce">
+      <td style="color:#7a2a2a;font-weight:600">Inactive (Terminated / Unknown)</td>
+      <td>${inact1.toLocaleString()}</td>
+      <td>${inact2.toLocaleString()}</td>
+      <td style="color:#555">${pct(inact2, total2 + inact2)}</td>
+      <td class="delta-cell ${inactDelta.cls==='up'?'pos':inactDelta.cls==='down'?'neg':'zer'}">${inactDelta.text}</td>
+    </tr>`;
+    const inactiveEngRow = `<tr style="background:#fef3f2;border-top:2px solid #e8d0ce">
+      <td style="color:#7a2a2a;font-weight:600">Inactive (Terminated / Unknown)</td>${inactEngCells}
+    </tr>`;
 
     const tiers = [
       { key: 'working',     label: 'Active Right Now',                     isSubtier: false },
@@ -768,7 +790,7 @@
 
         <div>
           <div style="font-weight:700;font-size:0.78rem;color:#023e8a;margin-bottom:6px">
-            Experts
+            Experts — ${title}
             <span style="font-weight:400;color:#888;font-size:0.72rem">— number of experts with at least one item</span>
           </div>
           <table>
@@ -778,7 +800,8 @@
               <th>% of Total</th>
               <th>Change</th>
             </tr></thead>
-            <tbody>${expertRows}</tbody>
+            <tbody>${expertRows}${inactiveRow}
+            </tbody>
           </table>
         </div>
 
@@ -789,7 +812,7 @@
           </div>
           <table>
             <thead><tr><th>Availability Tier</th>${engHeaders}</tr></thead>
-            <tbody>${engRows}</tbody>
+            <tbody>${engRows}${inactiveEngRow}</tbody>
           </table>
         </div>
 
