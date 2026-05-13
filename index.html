@@ -100,9 +100,9 @@
     .kpi-card.ok   { border-left-color: #2d6a4f; }
     .kpi-card.info { border-left-color: #7b2d8b; }
 
-    .kpi-card .label { font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .kpi-card .values { display: flex; align-items: baseline; gap: 10px; }
-    .kpi-card .val { font-size: 1.6rem; font-weight: 700; }
+    .kpi-card .label { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .kpi-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .kpi-card .val { font-size: 1.3rem; font-weight: 700; }
     .kpi-card .delta {
       font-size: 0.85rem;
       font-weight: 600;
@@ -151,13 +151,13 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
+      font-size: 0.75rem;
     }
     thead tr { background: #023e8a; color: white; }
-    thead th { padding: 8px 10px; text-align: left; white-space: nowrap; font-weight: 600; }
+    thead th { padding: 5px 8px; text-align: left; white-space: nowrap; font-weight: 600; }
     tbody tr:nth-child(even) { background: #f7fafc; }
     tbody tr:hover { background: #e8f0fe; }
-    tbody td { padding: 7px 10px; border-bottom: 1px solid #eef2f7; }
+    tbody td { padding: 4px 8px; border-bottom: 1px solid #eef2f7; }
 
     .pill {
       display: inline-block;
@@ -285,6 +285,9 @@
   <div class="upload-section" style="grid-template-columns:1fr 1fr 1fr">
     <div class="upload-card">
       <h3>Day 1 — Baseline</h3>
+      <div style="font-size:0.75rem;color:#666;margin-bottom:8px;line-height:1.5">
+        Open the <a href="https://qliksenseprd.a.intuit.net/sense/app/4b2bc31f-43ca-4ef8-b892-f784a6e49e0f/sheet/2a5abb62-8892-45e8-b157-d873f09f9f07/state/analysis" target="_blank" style="color:#0077b6;font-weight:600">Expert Summary report ↗</a>, export the data as Excel, and upload it here.
+      </div>
       <div class="date-label" id="label-day1">No file loaded</div>
       <div class="file-input-wrapper">
         <input type="date" id="date-day1" />
@@ -295,6 +298,9 @@
     </div>
     <div class="upload-card">
       <h3>Day 2 — Comparison</h3>
+      <div style="font-size:0.75rem;color:#666;margin-bottom:8px;line-height:1.5">
+        Open the <a href="https://qliksenseprd.a.intuit.net/sense/app/4b2bc31f-43ca-4ef8-b892-f784a6e49e0f/sheet/2a5abb62-8892-45e8-b157-d873f09f9f07/state/analysis" target="_blank" style="color:#0077b6;font-weight:600">Expert Summary report ↗</a>, export the data as Excel, and upload it here.
+      </div>
       <div class="date-label" id="label-day2">No file loaded</div>
       <div class="file-input-wrapper">
         <input type="date" id="date-day2" />
@@ -304,8 +310,11 @@
       </div>
     </div>
     <div class="upload-card" style="border-style:dashed;border-color:#c8d6e5">
-      <h3>Trend Data <span style="font-weight:400;color:#aaa;font-size:0.8rem">— optional</span></h3>
-      <div class="date-label" id="label-trend" style="font-size:0.85rem;color:#888;font-weight:400">Daily rate CSV (unanswered_chat_t2…)</div>
+      <h3>WIP Impact Rate Trend <span style="font-weight:400;color:#aaa;font-size:0.8rem">— optional</span></h3>
+      <div style="font-size:0.75rem;color:#666;margin-bottom:8px;line-height:1.5">
+        Open the <a href="https://github.intuit.com/pages/xzhu4/unanswered-chat-report/" target="_blank" style="color:#0077b6;font-weight:600">Unanswered Chat Report ↗</a>, download the daily breakdown CSV, and upload it here.
+      </div>
+      <div class="date-label" id="label-trend" style="font-size:0.85rem;color:#888;font-weight:400">No file loaded</div>
       <div class="file-input-wrapper" style="margin-top:10px">
         <button class="file-btn" style="background:#5c8fc9" onclick="document.getElementById('file-trend').click()">Upload CSV</button>
         <input type="file" id="file-trend" accept=".csv" style="display:none" onchange="loadTrendFile(this)" />
